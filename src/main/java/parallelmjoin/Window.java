@@ -8,6 +8,4 @@ public interface Window {
     List<Tuple> probe(Tuple tuple);
 
     void expire(long timestamp);
-
-    int size();
 }

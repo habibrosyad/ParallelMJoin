@@ -27,19 +27,14 @@ public class WindowImpl implements Window {
 
     @Override
     public void expire(long timestamp) {
-        Iterator<Map.Entry<Integer,Tuple>> iter = internal.entries().iterator();
+        Iterator<Map.Entry<Integer, Tuple>> iter = internal.entries().iterator();
 
-        while(iter.hasNext()) {
-            if (Math.abs(iter.next().getValue().getTimestamp()-timestamp) > size) {
+        while (iter.hasNext()) {
+            if (Math.abs(iter.next().getValue().getTimestamp() - timestamp) > size) {
                 iter.remove();
             } else {
                 break;
             }
         }
-    }
-
-    @Override
-    public int size() {
-        return internal.size();
     }
 }

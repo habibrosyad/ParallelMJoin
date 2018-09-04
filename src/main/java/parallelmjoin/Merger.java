@@ -11,7 +11,6 @@ public class Merger implements Runnable {
     private final AtomicInteger barrier;
     private final List<BlockingQueue<List<Tuple>>> bucket;
     private final int numberOfThreads;
-    private int output;
 
     public Merger(AtomicInteger barrier, int numberOfThreads) {
         this.barrier = barrier;
@@ -40,7 +39,6 @@ public class Merger implements Runnable {
                 }
             }
 
-            output += matches;
             Stats.output.addAndGet(matches);
         }
     }
@@ -56,9 +54,5 @@ public class Merger implements Runnable {
 
     void add(int id, Tuple tuple) {
         addAll(id, Collections.singletonList(tuple));
-    }
-
-    public int getOutput() {
-        return output;
     }
 }

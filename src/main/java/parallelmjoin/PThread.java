@@ -52,6 +52,7 @@ public class PThread implements Runnable {
                 } else {
                     // Add tuple to the window
                     window.insert(tuple);
+
                     // Add to merger
                     merger.add(id, tuple);
                 }
