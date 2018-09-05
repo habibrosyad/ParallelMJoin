@@ -22,9 +22,9 @@ public class Experiment {
         Stream[] sources = Stream.values();
 
         WINDOW_SIZE = 4000000;
-        EXPECTED_OUTPUT = 10000;
+        EXPECTED_OUTPUT = 300000;
         NUMBER_OF_THREADS = sources.length;
-        STATS_WAIT = 60000;
+        STATS_WAIT = 20000;
         POISON = new Tuple(-1, null, -1, -1);
         queue = new LinkedBlockingQueue<>();
 
@@ -88,8 +88,8 @@ public class Experiment {
 
             long start = System.nanoTime();
             //Read local file of the stream
-            String filename = "/Users/habib.rosyad/sandbox/MScaleJoin/dataset/shj/1000000/" + source;
-            //String filename = source.toString();
+            //String filename = "/Users/habib.rosyad/sandbox/MScaleJoin/dataset/shj/1000000/" + source;
+            String filename = source.toString();
             int timestamp = 0;
             try {
                 Scanner scanner = new Scanner(new File(filename));
