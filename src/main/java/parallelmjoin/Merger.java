@@ -29,20 +29,21 @@ public class Merger implements Runnable {
         barrier.getAndDecrement();
         while (barrier.get() != 0) ;
 
-        while (true) {
-            int matches = 1;
-            for (int i = 0; i < numberOfThreads; i++) {
-                try {
+        try {
+            while (!Stats.finished.get()) {
+                int matches = 1;
+                for (int i = 0; i < numberOfThreads; i++) {
                     matches *= bucket.get(i).take().size();
-                } catch (InterruptedException e) {
-                    System.out.println(e.getMessage());
                 }
-            }
 
-            Stats.output.addAndGet(matches);
+                Stats.output.addAndGet(matches);
+
+                if (matches > 0) Stats.initialResponse.compareAndSet(0, System.nanoTime());
+            }
+        } catch (InterruptedException e) {
+//            System.out.println(e.getMessage());
         }
     }
-
 
     void addAll(int id, List<Tuple> tuples) {
         try {

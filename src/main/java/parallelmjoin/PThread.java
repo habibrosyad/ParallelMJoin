@@ -30,10 +30,13 @@ public class PThread implements Runnable {
         while (barrier.get() != 0) ;
 
         // barrier will be used again to sync the pipeline between PThread and Merger
-        while (true) {
+        while (!Stats.finished.get()) {
             try {
                 // Block until there is a tuple to be processed
                 Tuple tuple = queue.take();
+
+                // If the tuple is poison
+                if (tuple.getTimestamp() == -1) break;
 
                 // If the tuple comes from the same source do not probe
                 if (tuple.getSource() != source) {
@@ -60,7 +63,6 @@ public class PThread implements Runnable {
                 System.out.print(e.getMessage());
             }
         }
-
     }
 
     public void addToQueue(Tuple tuple) {

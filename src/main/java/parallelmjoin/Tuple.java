@@ -13,19 +13,19 @@ public class Tuple {
         this.value = value;
     }
 
-    public long getTimestamp() {
+    long getTimestamp() {
         return timestamp;
     }
 
-    public Stream getSource() {
+    Stream getSource() {
         return source;
     }
 
-    public int getKey() {
+    int getKey() {
         return key;
     }
 
-    public int getValue() {
+    int getValue() {
         return value;
     }
 }

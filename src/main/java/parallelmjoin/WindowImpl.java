@@ -10,7 +10,7 @@ public class WindowImpl implements Window {
     private final LinkedListMultimap<Integer, Tuple> internal;
     private final long size;
 
-    public WindowImpl(long size) {
+    WindowImpl(long size) {
         this.size = size;
         internal = LinkedListMultimap.create();
     }
