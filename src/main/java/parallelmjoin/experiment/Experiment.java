@@ -9,11 +9,17 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Experiment {
+    private static String path = "";
     private static Tuple poison;
     private static AtomicInteger barrier;
     private static BlockingQueue<Tuple> queue;
 
     public static void main(String[] args) throws InterruptedException {
+        // Assume args[0] is a dataset path information
+        if (args.length > 0) {
+            path = args[0];
+        }
+
         Stream[] sources = Stream.values();
 
         int numberOfThreads = sources.length;
@@ -92,7 +98,7 @@ public class Experiment {
 //            long start = System.nanoTime();
             // Read local file of the stream
 //            String filename = "/Users/habib.rosyad/sandbox/MScaleJoin/dataset/shj/1000000/" + source;
-            String filename = source.toString();
+            String filename = path + source;
             int timestamp = 0;
             try {
                 Scanner scanner = new Scanner(new File(filename));
