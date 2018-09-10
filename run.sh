@@ -11,10 +11,8 @@ data_path=${1}
 output_path="output"
 # Output file name
 output="$output_path/ParallelMJoin_$now"
-# Number of threads
-n_threads=${2}
 # Number of trials
-n_trials=${3}
+n_trials=${2}
 
 # Check dataset path
 if [[ ! -d $data_path ]]; then
