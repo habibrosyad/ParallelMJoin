@@ -32,3 +32,8 @@ for (( i=0; i<$n_trials; i++ )); do
 	java -jar ParallelMJoin.jar $data_path >> $output
 	sleep 1
 done
+
+# Send mail as notification that the task is finished. 
+# This assume that 'mail' is intalled and configured.
+ip=`hostname -I`
+echo "ParallelMJoin experiment is done on $ip" | mail -s "ParallelMJoin Experiment on $ip" habib.ryd@gmail.com
