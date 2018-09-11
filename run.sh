@@ -29,7 +29,7 @@ fi
 
 # Run the experiments n_trials time
 for (( i=0; i<$n_trials; i++ )); do
-	echo -n "ParallelMJoin,EquiJoinCommonShj,$n_cpus" >> $output
+	echo -n "ParallelMJoin,EquiJoinCommonShj,$n_cpus," >> $output
 	java -jar ParallelMJoin.jar $data_path >> $output
 	sleep 2
 done
