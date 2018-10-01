@@ -4,34 +4,32 @@
 
 # Dataset path
 data_path=${1}
-# Number of trials
-n_trials=${2}
+# Rates per second
+rates="1000 2000 4000 8000 16000 32000"
+# Window size in milis
+windows="60000 120000 300000 600000 900000"
 # Output path
 output_path="output"
 # Output file name
-output="$output_path/out_${3}" # ${3} should be a date
+output="$output_path/output_${2}" # ${2} should be a date
 
 # Check dataset path
 if [[ ! -d $data_path ]]; then
 	exit 1
 fi
 
-# Get number of dataset as number of cpu
-n_cpus=$((`ls -l $data_path | wc -l`-1))
-
 # Create output directory if it doesn't exist
 if [[ ! -d $output_path ]]; then
 	mkdir $output_path
 fi
 
-# Structure of the output file
-# [algorithm,experiment,cpus,elapsed_s,initial_response_ms,output_total,output_s,comparison_total,comparison_s]
-
 # Run the experiments n_trials time
-for (( i=0; i<$n_trials; i++ )); do
-	echo -n "ParallelMJoin,EquiJoinCommonShj,$n_cpus," >> $output
-	java -jar ParallelMJoin.jar $data_path >> $output
-	sleep 2
+for r in $rates; do
+	for w in $windows; do
+		# [experiment_id, trial_id, threads, window_ms, rate_s, latency_ms, processed_s, output_s, comparison_s, comparison_avg_s]
+		java -jar ParallelMJoin.jar $r $w $data_path | while read line; do echo "Scenario4a3,$line"; done >> $output
+		sleep 2
+	done
 done
 
 # Send mail as notification that the task is finished. 

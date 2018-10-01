@@ -1,5 +1,7 @@
 package parallelmjoin;
 
+import com.google.common.collect.Lists;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +14,7 @@ public class Merger implements Runnable {
     private final List<BlockingQueue<List<Tuple>>> bucket;
     private final int numberOfThreads;
 
-    public Merger(AtomicInteger barrier, int numberOfThreads) {
+    Merger(AtomicInteger barrier, int numberOfThreads) {
         this.barrier = barrier;
         this.numberOfThreads = numberOfThreads;
         bucket = new ArrayList<>();
@@ -30,18 +32,30 @@ public class Merger implements Runnable {
         while (barrier.get() != 0) ;
 
         try {
-            while (!Stats.finished.get()) {
-                int matches = 1;
+            while (!Stats.isDone()) {
+                List<List<Tuple>> product = new ArrayList<>();
+                long maxTimestamp = 0;
+
                 for (int i = 0; i < numberOfThreads; i++) {
-                    matches *= bucket.get(i).take().size();
+                    List<Tuple> matches = bucket.get(i).take();
+                    product.add(matches);
+                    // For latency calculation
+                    for (Tuple match : matches) {
+                        if (match.getTimestamp() > maxTimestamp) {
+                            maxTimestamp = match.getTimestamp();
+                        }
+                    }
                 }
 
-                Stats.output.addAndGet(matches);
+                List<List<Tuple>> output = Lists.cartesianProduct(product);
 
-                if (matches > 0) Stats.initialResponse.compareAndSet(0, System.nanoTime());
+                if (output.size() > 0) {
+                    Stats.addLatency(System.currentTimeMillis() - maxTimestamp);
+                }
+
+                Stats.addOutput(output.size());
             }
         } catch (InterruptedException e) {
-//            System.out.println(e.getMessage());
         }
     }
 

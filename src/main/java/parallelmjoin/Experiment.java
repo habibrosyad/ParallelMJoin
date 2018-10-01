@@ -1,6 +1,4 @@
-package parallelmjoin.experiment;
-
-import parallelmjoin.*;
+package parallelmjoin;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,15 +7,18 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Experiment {
-    private static String path = "";
+    private static int rate = 1000;
+    private static long windowSize = 20000;
+    private static String path = "/Users/habib.rosyad/sandbox/MScaleJoin/dataset/shj/1000000/";
     private static Tuple poison;
     private static AtomicInteger barrier;
     private static BlockingQueue<Tuple> queue;
 
     public static void main(String[] args) throws InterruptedException {
-        // Assume args[0] is a dataset path information
-        if (args.length > 0) {
-            path = args[0];
+        if (args.length > 2) {
+            rate = Integer.parseInt(args[0]);
+            windowSize = Long.parseLong(args[1]);
+            path = args[2];
         }
 
         Stream[] sources = Stream.values();
@@ -37,7 +38,7 @@ public class Experiment {
         Merger merger = new Merger(barrier, numberOfThreads);
 
         // Run stats
-        Stats.run(barrier, 20000);
+        Stats.run(barrier, numberOfThreads, windowSize, rate);
 
         // Run merger
         pool.submit(merger);
@@ -45,12 +46,10 @@ public class Experiment {
         // Initialise producer and consumer
         for (int i = 0; i < numberOfThreads; i++) {
             producers[i] = new Producer(sources[i]);
-            consumers[i] = new PThread(i, sources[i], 4000000, merger, barrier);
+            consumers[i] = new PThread(i, sources[i], windowSize, merger, barrier);
             pool.submit(producers[i]);
             pool.submit(consumers[i]);
         }
-
-//        long start = System.nanoTime();
 
         // PThread queue feeder
         int poisonCounter = 0;
@@ -72,14 +71,11 @@ public class Experiment {
         }
 
         // Wait until Stats marked as finished
-        while (!Stats.finished.get()) ;
+        while (!Stats.isDone()) ;
 
+        // Shutdown pool
         pool.shutdownNow();
         pool.awaitTermination(1, TimeUnit.MILLISECONDS);
-
-//        while (Stats.output.get() != 300000) ;
-//
-//        System.out.println("Finish in " + (System.nanoTime() - start) / 1000000 + "ms, output " + Stats.output.get());
     }
 
     private static class Producer implements Runnable {
@@ -95,18 +91,29 @@ public class Experiment {
             barrier.getAndDecrement();
             while (barrier.get() != 0) ;
 
-//            long start = System.nanoTime();
+            // For rate control
+            long before = 0;
+            float ahead = 0;
+
             // Read local file of the stream
-//            String filename = "/Users/habib.rosyad/sandbox/MScaleJoin/dataset/shj/1000000/" + source;
             String filename = path + source;
-            int timestamp = 0;
             try {
                 Scanner scanner = new Scanner(new File(filename));
 
-                while (scanner.hasNextLine() && !Stats.finished.get()) {
+                while (scanner.hasNextLine() && !Stats.isDone()) {
                     String[] keyval = scanner.nextLine().trim().split("\\s+");
-                    queue.put(new Tuple(timestamp++, source,
+                    queue.put(new Tuple(System.currentTimeMillis(), source,
                             Integer.parseInt(keyval[0]), Integer.parseInt(keyval[1])));
+
+                    // Rate control
+                    long now = System.nanoTime() / 1000000L;
+                    if (before != 0) {
+                        ahead -= (float) (now - before) / 1000 * rate - 1;
+                        if (ahead > 0) {
+                            Thread.sleep((long) (ahead / rate * 1000));
+                        }
+                    }
+                    before = now;
                 }
 
                 queue.put(poison);
@@ -115,8 +122,6 @@ public class Experiment {
             } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
             }
-
-//            System.out.println("Finish with " + source + " total " + timestamp + " in " + (System.nanoTime() - start) / 1000000 + "ms");
         }
     }
 }

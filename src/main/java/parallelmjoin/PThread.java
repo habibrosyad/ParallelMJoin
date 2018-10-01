@@ -14,7 +14,7 @@ public class PThread implements Runnable {
     private final AtomicInteger barrier;
     private final BlockingQueue<Tuple> queue;
 
-    public PThread(int id, Stream source, long windowSize, Merger merger, AtomicInteger barrier) {
+    PThread(int id, Stream source, long windowSize, Merger merger, AtomicInteger barrier) {
         this.id = id;
         this.source = source;
         this.window = new WindowImpl(windowSize);
@@ -30,7 +30,7 @@ public class PThread implements Runnable {
         while (barrier.get() != 0) ;
 
         // barrier will be used again to sync the pipeline between PThread and Merger
-        while (!Stats.finished.get()) {
+        while (!Stats.isDone()) {
             try {
                 // Block until there is a tuple to be processed
                 Tuple tuple = queue.take();
@@ -44,7 +44,7 @@ public class PThread implements Runnable {
                     window.expire(tuple.getTimestamp());
 
                     // Increase stats
-                    Stats.comparison.getAndIncrement();
+                    Stats.incrementComparison();
 
                     // Probe the window
                     List<Tuple> matches = new ArrayList<>();
@@ -58,6 +58,9 @@ public class PThread implements Runnable {
 
                     // Add to merger
                     merger.add(id, tuple);
+
+                    // Increase number of processed tuples
+                    Stats.incrementProcessed();
                 }
             } catch (InterruptedException e) {
                 System.out.print(e.getMessage());
@@ -65,7 +68,7 @@ public class PThread implements Runnable {
         }
     }
 
-    public void addToQueue(Tuple tuple) {
+    void addToQueue(Tuple tuple) {
         queue.add(tuple);
     }
 }

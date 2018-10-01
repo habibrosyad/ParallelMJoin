@@ -1,12 +1,12 @@
 package parallelmjoin;
 
-public class Tuple {
+class Tuple {
     private final long timestamp;
     private final Stream source;
     private final int key;
     private final int value;
 
-    public Tuple(long timestamp, Stream source, int key, int value) {
+    Tuple(long timestamp, Stream source, int key, int value) {
         this.timestamp = timestamp;
         this.source = source;
         this.key = key;
