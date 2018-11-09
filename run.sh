@@ -2,16 +2,18 @@
 
 # This script assume ParallelMJoin.jar is in the same directory
 
+# Trial id
+trial=${1}
 # Dataset path
-data_path=${1}
+data_path=${2}
 # Rates per second
-rates="1000 2000 4000 8000 16000 32000"
+rates="1000 3000 5000"
 # Window size in milis
-windows="60000 120000 300000 600000 900000"
+windows="60000 300000 600000"
 # Output path
 output_path="output"
 # Output file name
-output="$output_path/output_${2}" # ${2} should be a date
+output="$output_path/output_${1}_${3}" # ${3} should be a date
 
 # Check dataset path
 if [[ ! -d $data_path ]]; then
@@ -26,8 +28,8 @@ fi
 # Run the experiments n_trials time
 for r in $rates; do
 	for w in $windows; do
-		# [experiment_id, trial_id, threads, window_ms, rate_s, latency_ms, processed_s, output_s, comparison_s, comparison_avg_s]
-		java -jar ParallelMJoin.jar $r $w $data_path | while read line; do echo "Scenario4a3,$line"; done >> $output
+		# [trial_id, experiment_id, threads, window_ms, rate_s, latency_ms, processed_s, processed_avg_s, output_s, comparison_s, comparison_avg_s]
+		java -jar ParallelMJoin.jar $r $w $data_path | while read line; do echo "$trial,Scenario4a3,$line"; done >> $output
 		sleep 2
 	done
 done

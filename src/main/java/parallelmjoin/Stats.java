@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 class Stats {
     private static final String separator = ",";
+    private static final long duration = 30; // In seconds
     private static final AtomicLong latency = new AtomicLong(); // Sum of latency
     private static final AtomicLong latencyCounter = new AtomicLong();
     private static final AtomicLong processed = new AtomicLong(); // Tuple processed
@@ -26,37 +27,23 @@ class Stats {
                 // Warming up, up to the length of the window
                 Thread.sleep(windowSize);
 
-                // Measure for 10 times
-                for (int i = 0; i < 5; i++) {
-                    enabled.set(true);
+                enabled.set(true);
 
-                    // Measure stats for 10s
-                    Thread.sleep(10000);
-                    enabled.set(false);
+                Thread.sleep(duration * 1000);
+                enabled.set(false);
 
-                    // Produce CSV like data to ease the analysis
-                    // [trial_id, threads, window_ms, rate_s,
-                    // latency_ms, processed_s, output_s, comparison_s, comparison_avg_s]
-                    System.out.println(i + separator +
-                            numberOfThreads + separator +
-                            windowSize + separator +
-                            rate + separator +
-                            latency.get() / (latencyCounter.get() > 0 ? latencyCounter.get() : 1 )  + separator +
-                            processed.get() / 10 + separator +
-                            output.get() / 10 + separator +
-                            comparison.get() / 10 + separator +
-                            comparison.get() / 10 / numberOfThreads
-                    );
-
-                    // Add delay of 1s between trials
-                    Thread.sleep(1000);
-
-                    // Reset stats
-                    latency.set(0);
-                    processed.set(0);
-                    comparison.set(0);
-                    output.set(0);
-                }
+                // Produce CSV like data to ease the analysis
+                // [threads,window_ms,rate_s,latency_ms,processed_s,processed_avg_s,output_s,comparison_s,comparison_avg_s]
+                System.out.println(numberOfThreads + separator +
+                        windowSize + separator +
+                        rate + separator +
+                        latency.get() / (latencyCounter.get() > 0 ? latencyCounter.get() : 1) + separator +
+                        processed.get() / duration + separator +
+                        processed.get() / duration + separator +
+                        output.get() / duration + separator +
+                        comparison.get() / duration + separator +
+                        comparison.get() / duration / numberOfThreads
+                );
 
                 // Set to finish, kill all threads
                 done.set(true);

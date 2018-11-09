@@ -7,9 +7,9 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Experiment {
-    private static int rate = 1000;
+    private static int rate = 5000;
     private static long windowSize = 20000;
-    private static String path = "/Users/habib.rosyad/sandbox/MScaleJoin/dataset/shj/1000000/";
+    private static String path = "/Users/habib.rosyad/sandbox/MScaleJoin/dataset/shj/3000000/";
     private static Tuple poison;
     private static AtomicInteger barrier;
     private static BlockingQueue<Tuple> queue;
